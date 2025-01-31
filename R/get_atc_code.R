@@ -1,9 +1,9 @@
 #' Get ATC codes (DrecNos or MPIs)
 #'
-#' @description `r lifecycle::badge('stable')` `get_atc_code()` collects
+#' @description `r lifecycle::badge('stable')` Collect
 #' Drug Record Numbers or MedicinalProd_Ids associated to one or more ATC classes.
 #'
-#' @details Provide `atc_sel` in the same way as `d_sel` in [add_drug()],
+#' @details `get_atc_code()` is an *ID collector* function. Provide `atc_sel` in the same way as `d_sel` in [add_drug()],
 #' but remember to specify its method arg as `MedicinalProd_Id` if
 #' `vigilyze` is set to `FALSE`.
 #' Vigilyze style means all conditioning of drugs will be retrieved after
@@ -13,7 +13,7 @@
 #'
 #' @param atc_sel A named list of ATC codes. See Details.
 #' @param vigilyze A logical. Should ATC classes be retrieved using the vigilyze style? See details
-#' @param mp_short A modified MP data.table. See \code{\link{mp_short_}}
+#' @param mp A modified MP data.table. See \code{\link{mp_}}
 #' @param thg_data A data.table. Correspondence between ATC codes and MedicinalProd_Id (usually, it is `thg`)
 #' @keywords data_management drug atc
 #' @export
@@ -21,7 +21,7 @@
 #' or a list of **MedicinalProd_Ids** if `vigilyze` is set to `FALSE`
 #' @importFrom rlang .data
 #' @importFrom rlang .env
-#' @seealso \code{\link{mp_short_}}, \code{\link{thg_}}, [add_drug()], [get_drecno()]
+#' @seealso \code{\link{mp_}}, \code{\link{thg_}}, [add_drug()], [get_drecno()]
 #' @examples
 #' # ## Find codes associated with one or more atc classes
 #'
@@ -36,7 +36,7 @@
 #'
 #' atc_drecno <-
 #'   get_atc_code(atc_sel = atc_sel,
-#'                mp_short = mp_short_,
+#'                mp = mp_,
 #'                thg_data = thg_,
 #'                vigilyze = TRUE)
 #'
@@ -44,14 +44,14 @@
 #'
 #' atc_mpi <-
 #'   get_atc_code(atc_sel = atc_sel,
-#'                mp_short = mp_short_,
+#'                mp = mp_,
 #'                thg_data = thg_,
 #'                vigilyze = FALSE)
 
 
 get_atc_code <-
   function(atc_sel,
-           mp_short,
+           mp,
            thg_data,
            vigilyze = TRUE) {
 
@@ -69,11 +69,11 @@ get_atc_code <-
       warning("names of atc_sel were tolower-ed and trimed")
     }
 
-    if("Table"  %in% class(mp_short)){
-      # automatically collect mp_short if out of memory
+    if("Table"  %in% class(mp)){
+      # automatically collect mp if out of memory
       # since it's a small table
-      mp_short <-
-        dplyr::collect(mp_short)
+      mp <-
+        dplyr::collect(mp)
     }
 
     if("Table"  %in% class(thg_data)){
@@ -114,20 +114,23 @@ get_atc_code <-
     # vigilyze is FALSE : return result ----
 
     if (vigilyze) {
-      message("vigilyze set to TRUE, extracting DrecNos (?get_atc_code for details)")
+      cli::cli_alert_info(
+        "vigilyze set to TRUE, extracting DrecNos (?get_atc_code for details)"
+        )
 
       get_drecno(
         d_sel = atc_sel_mpi,
-        mp_short = mp_short,
+        mp = mp,
         allow_combination = FALSE,
         method = "mpi_list",
-        inspect = FALSE,
-        show_all = FALSE
+        verbose = FALSE
       )
 
     } else {
 
-      message("vigilyze set to FALSE, extracting MedicinalProd_ids (?get_atc_code for details)")
+      cli::cli_alert_info(
+        "vigilyze set to FALSE, extracting MedicinalProd_ids (?get_atc_code for details)"
+        )
 
       atc_sel_mpi
     }

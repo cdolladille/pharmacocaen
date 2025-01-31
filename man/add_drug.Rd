@@ -11,7 +11,7 @@ add_drug(
   repbasis = "sci",
   method = c("DrecNo", "MedicinalProd_Id"),
   drug_data,
-  data_type = c("demo", "link", "adr")
+  data_type = deprecated()
 )
 }
 \arguments{
@@ -21,43 +21,57 @@ add_drug(
 
 \item{d_names}{A character vector. Names for drug columns (must be the same length as d_code), default to \code{names(d_code)}}
 
-\item{repbasis}{Suspect, interacting and/or concomitant. Type initial of those you wish to select (s for suspect, c for concomitant and i for interacting ; default to all)}
+\item{repbasis}{Suspect, interacting and/or concomitant.
+Type initial of those you wish to select ("s" for suspect, "c" for concomitant
+and "i" for interacting ; default to all, e.g. "sci").}
 
 \item{method}{A character string. The type of drug code (DrecNo or MedicinalProd_Id). See details.}
 
 \item{drug_data}{A data.frame containing the drug data (usually, it is \code{drug})}
 
-\item{data_type}{A character string. The type of data to add columns to. Either \code{demo} or \code{link} (default to \code{demo})}
+\item{data_type}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}. Data_type is now detected
+internally.}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}} add_drug() creates drug columns.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}} Creates drug columns.
+in vigibase datasets (demo, link, adr, but also drug).
 }
 \details{
-d_code is a named list containing drug codes.
-Either medicinalprod_ids (e.g., from \code{tb_custom}), or drug record numbers
-(e.g., from \code{get_drecno}). Default method is to DrecNos.
-Drugs can be reported according to one of three reputation bases:
-suspect, concomitant or interacting in the occurrence of the adverse drug
-reaction. You may want to study only reports with a specific reputation basis.
-You can add drug identification to a \code{demo}, a \code{link}, or an \code{adr} dataset.
-Remember to set to the \code{data_type} argument to the appropriate value.
+\code{d_code} is a named list containing drug codes.
+Either drug record numbers (e.g., from \code{\link[=get_drecno]{get_drecno()}}), or
+medicinalprod_ids (e.g., from \code{\link[=get_atc_code]{get_atc_code()}}). Default method is to DrecNos.
 }
+\section{Argument \code{repbasis}}{
+
+Drugs can be reported according to one of three reputation bases:
+\itemize{
+\item \code{s} for suspect
+\item \code{c} for concomitant
+\item \code{i} for interacting
+}
+in the occurrence of the adverse drug reaction. To study only one of these
+reputation basis, type only the corresponding letter in \code{repbasis},
+e.g. "s" for suspects, or "si" for suspect \strong{or} interacting.
+
+You can add drug identification to a \code{demo}, \code{link}, \code{adr} or even \code{drug}
+dataset.(in this latter case, you must provide \code{adr} twice,
+as \code{.data} and \code{drug_data})
+}
+
 \examples{
 # create a nivolumab column in demo_
 
-d_sel_names <- rlang::list2(nivolumab = "nivolumab")
+d_sel_names <- list(nivolumab = "nivolumab")
 
 d_drecno <- get_drecno(d_sel_names,
-                        mp_short = mp_short_)
-
+                        mp = mp_)
 demo_ <-
   add_drug(
     .data = demo_,
     d_code = d_drecno,
     method = "DrecNo",
     repbasis = "sci",
-    drug_data = drug_,
-    data_type = c("demo")
+    drug_data = drug_
   )
 
 # remember to assign the result to your actual demo dataset
@@ -72,8 +86,7 @@ demo_ <-
     d_names = "nivolumab_suspected",
     method = "DrecNo",
     repbasis = "s",
-    drug_data = drug_,
-    data_type = c("demo")
+    drug_data = drug_
   )
 
 check_dm(demo_, cols = c("nivolumab", "nivolumab_suspected"))

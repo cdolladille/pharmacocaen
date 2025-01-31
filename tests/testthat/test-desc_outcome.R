@@ -2,47 +2,42 @@ test_that("gives proper counts", {
 
   d_drecno_test <-
     rlang::list2(
-      ici1 = "ici1",
-      ici2 = "ici2",
-      ici3 = "ici3"
+      ici1 = 21,
+      ici2 = 22,
+      ici3 = 23
     )
 
   drug_test <-
     data.table(
       Drug_Id = c("d1_ici1", "d2_ici2", "d3_ici3", "d4_ici1", "d5_ici1"),
       Basis   = c(1, 1, 1, 1, 1),
-      DrecNo  = c("ici1", "ici2", "ici1", "ici1", "ici1"),
-      UMCReportId = c(1, 1, 2, 2, 3)
+      DrecNo  = c(21, 22, 21, 21, 21),
+      UMCReportId = c(1, 1, 2, 2, 3),
+      MedicinalProd_Id = NA
     )
 
   adr_list_test <-
     rlang::list2(
-      adr1 = "adr1",
-      adr2 = "adr2",
-      adr3 = "adr3",
-      adr4 = "adr4"
+      adr1 = 12,
+      adr2 = 13,
+      adr3 = 14,
+      adr4 = 15
     )
 
   adr_test <-
     data.table(
       UMCReportId = c(1, 1, 2, 2, 3),
       Adr_Id = c("a1_adr1", "a2_adr4", "a3_adr2", "a4_adr4", "a5_adr2"),
-      MedDRA_Id = c("adr1", "adr4", "adr1", "adr4", "adr2"),
+      MedDRA_Id = c(12, 15, 12, 15, 13),
       Outcome = c(1, 2, 3, 2, 2)
     )
 
-  adr_test <-
-    adr_test %>%
-    add_drug(
-      d_code = d_drecno_test,
-      drug_data = drug_test,
-      data_type = "adr"
-    ) %>%
-    add_adr(
-      a_code = adr_list_test,
-      adr_data = adr_test,
-      data_type = "adr"
-    )
+  expect_snapshot({
+    adr_test <-
+      adr_test %>%
+      add_drug(d_code = d_drecno_test, drug_data = drug_test) %>%
+      add_adr(a_code = adr_list_test, adr_data = adr_test)
+  })
 
 
   d_out_test <-

@@ -1,18 +1,25 @@
-#' Add ADR column(s) to a dataset (tidyverse syntax)
+#' Add ADR column(s) to a dataset
 #'
-#' @description `r lifecycle::badge('stable')` add_adr() creates adr columns.
+#' @description `r lifecycle::badge('stable')`Creates adr columns
+#' in vigibase datasets (demo, link, drug, but also adr).
 #'
 #' @details Low-level term codes are the preferred level of requesting in
 #' Vigibase extract case level since they capture all possible codes for a given
-#' Preferred Term. Case identifiers should be standardized (e.g. `UMCReportId`, `Adr_Id`).
-#' You can add adr identification to a `demo`, a `link`, or and `adr` dataset.
-#' Remember to set to the `data_type` argument to the appropriate value.
+#' Preferred Term. Collect low-level terms with [get_llt_soc()] and
+#' [get_llt_smq()]. You can add adr identification to a `demo`, a `link`, `drug`
+#' or even an `adr` dataset (in this latter case, you must provide `adr` twice,
+#' as `.data` and `adr_data`). Column names of these dataset should not have been
+#' modified from the original vigibase dataset (as created with [tb_vigibase()]).
 #'
-#' @param .data The dataset used to identify individual reports (usually, it is `demo`)
+#' @param .data The dataset to update (demo, link, drug, adr).
 #' @param a_code A named list of low level terms codes (llt_codes).
-#' @param a_names A character vector. Names for adr columns (must be the same length as adr_list), default to `names(adr_list)`
+#' @param a_names A character vector. Names for adr columns (must be the
+#' same length as adr_list), default to `names(a_code)`
 #' @param adr_data A data.frame containing the adr data (usually, it is `adr`)
-#' @param data_type A character string. The type of data to add columns to. Either `demo` or `link` (default to `demo`)
+#' @param data_type `r lifecycle::badge('deprecated')`. Data_type is now detected
+#' internally.
+#' @returns A dataset with the new adr columns.
+#' Each value of `a_names` will add a column with the same name in `.data`.
 #' @export
 #' @importFrom rlang .data
 #' @importFrom rlang .env
@@ -50,27 +57,28 @@ add_adr <-
   function(.data,
            a_code,
            a_names = names(a_code),
-
            adr_data,
 
-           data_type = c("demo", "link", "adr")
+           data_type = deprecated()
            ){
 
-    data_type <- match.arg(data_type)
+    check_id_list_numeric(a_code)
 
-    # use duplicates in UMCReportId to identify a link dataset versus a demo dataset.
-    # and check that data_type is set correctly
-    if(data_type == "demo" &&
-       any(c("Drug_Id", "Adr_Id") %in% names(.data))){
-      stop("The dataset has Drug_Id or Adr_Id columns (like a `link` dataset). Yet data_type is set to `demo`. Please set data_type to `link` or use a `demo` dataset")
-    } else if(data_type == "link" &&
-              !all(c("Drug_Id", "Adr_Id") %in% names(.data))){
-      stop("The dataset does not have Drug_Id and Adr_Id columns, (as a `link` dataset would). Yet data_type is set to `link`. Please set data_type to `demo` or use a `link` dataset")
-    } else if(data_type == "adr" &&
-              !all(c("Adr_Id", "MedDRA_Id", "Outcome") %in% names(.data))){
-      stop("The dataset does not have Adr_Id, MedDRA_Id, and/or Outcome columns, (as an `adr` dataset would). Yet data_type is set to `adr`. Please set data_type accordingly.")
+    check_data_adr(adr_data)
+
+    # Check if user has supplied `data_type`.
+    if (lifecycle::is_present(data_type)) {
+
+      # Signal the deprecation to the user
+      lifecycle::deprecate_soft(
+        when = "0.14.1",
+        what = "add_adr(data_type)",
+        details = c("i" = "data_type is now internally detected")
+      )
     }
 
+    data_type <-
+      query_data_type(.data, ".data")
 
     # identify table_ids to collect
 
@@ -78,7 +86,8 @@ add_adr <-
       switch(data_type,
              demo = "UMCReportId",
              adr  = "Adr_Id",
-             link = "Adr_Id"
+             link = "Adr_Id",
+             drug = "UMCReportId"
       )
 
 

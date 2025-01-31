@@ -4,25 +4,34 @@
 \alias{get_llt_smq}
 \title{Extract low level terms from SMQs}
 \usage{
-get_llt_smq(smq, smq_scope = c("narrow", "broad"), smq_list_content)
+get_llt_smq(
+  smq,
+  smq_scope = c("narrow", "broad"),
+  smq_list,
+  smq_content,
+  smq_list_content = deprecated()
+)
 }
 \arguments{
 \item{smq}{A named list of character vector of length 1.}
 
 \item{smq_scope}{A character vector. One of "narrow" or "broad".}
 
-\item{smq_list_content}{A data.table. A joint of smq_list and smq_content}
+\item{smq_list}{A data.table. A list of SMQs.}
+
+\item{smq_content}{A data.table. A list of SMQs content.}
+
+\item{smq_list_content}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}} \code{get_llt_smq()}
-extracts a list of llts from an \code{smq_list_content} data.table, given an SMQ.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}} Collect llts from \code{smq_list}
+and \code{smq_content} data.tables, given an SMQ.
 }
 \details{
-SMQ stands for Standardized MedDRA query.
+\code{get_llt_smq()} is an \emph{ID collector} function. SMQ stands for Standardized MedDRA query.
 \code{get_llt_smq()}only works with NON-algorithmic SMQs
 (this status is given in the smq_list table).
-The \code{smq_list_content} data.table is obtained by joining \code{smq_list} and \code{smq_content}.
-An example is provided here \code{\link{smq_list_content_}}. You can choose
+See \code{\link{smq_list_}} and \code{\link{smq_content_}}. You can choose
 between the narrow and the broad scope of the SMQ.
 If you want to work with the SOC hierarchy, use \code{\link[=get_llt_soc]{get_llt_soc()}}.
 }
@@ -34,8 +43,22 @@ smq_sel <- rlang::list2(
  )
 get_llt_smq(smq_sel,
                 smq_scope = "narrow",
-                smq_list_content = smq_list_content_
+                smq_list = smq_list_,
+                smq_content = smq_content_
                 )
+
+# You can query multiple SMQs in one item, and query high level SMQs
+smq_sel2 <-
+  rlang::list2(
+    sepsis = c("Sepsis (SMQ)","Toxic-septic shock conditions (SMQ)"),
+    ischemic_heart_disease = c("Ischaemic heart disease (SMQ)"),
+  )
+
+get_llt_smq(smq_sel2,
+            smq_scope = "narrow",
+            smq_list = smq_list_,
+            smq_content = smq_content_
+            )
 }
 \seealso{
 \code{\link[=get_llt_soc]{get_llt_soc()}}

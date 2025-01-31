@@ -1,23 +1,37 @@
 #' Add DRUG column(s) to a dataset (tidyverse syntax)
 #'
-#' @description `r lifecycle::badge('stable')` add_drug() creates drug columns.
+#' @description `r lifecycle::badge('stable')` Creates drug columns.
+#' in vigibase datasets (demo, link, adr, but also drug).
 #'
-#' @details d_code is a named list containing drug codes.
-#' Either medicinalprod_ids (e.g., from `tb_custom`), or drug record numbers
-#' (e.g., from `get_drecno`). Default method is to DrecNos.
+#' @details `d_code` is a named list containing drug codes.
+#' Either drug record numbers (e.g., from [get_drecno()]), or
+#' medicinalprod_ids (e.g., from [get_atc_code()]). Default method is to DrecNos.
+#'
+#' @section Argument `repbasis`:
 #' Drugs can be reported according to one of three reputation bases:
-#' suspect, concomitant or interacting in the occurrence of the adverse drug
-#' reaction. You may want to study only reports with a specific reputation basis.
-#' You can add drug identification to a `demo`, a `link`, or an `adr` dataset.
-#' Remember to set to the `data_type` argument to the appropriate value.
+#' \itemize{
+#'  \item `s` for suspect
+#'  \item `c` for concomitant
+#'  \item `i` for interacting
+#'  }
+#' in the occurrence of the adverse drug reaction. To study only one of these
+#' reputation basis, type only the corresponding letter in `repbasis`,
+#' e.g. "s" for suspects, or "si" for suspect **or** interacting.
+#'
+#' You can add drug identification to a `demo`, `link`, `adr` or even `drug`
+#' dataset.(in this latter case, you must provide `adr` twice,
+#' as `.data` and `drug_data`)
 #'
 #' @param .data The dataset used to identify individual reports (usually, it is `demo`)
 #' @param d_code A named list of drug codes (DrecNos or MPI). See Details.
 #' @param d_names A character vector. Names for drug columns (must be the same length as d_code), default to `names(d_code)`
 #' @param method A character string. The type of drug code (DrecNo or MedicinalProd_Id). See details.
-#' @param repbasis Suspect, interacting and/or concomitant. Type initial of those you wish to select (s for suspect, c for concomitant and i for interacting ; default to all)
+#' @param repbasis Suspect, interacting and/or concomitant.
+#' Type initial of those you wish to select ("s" for suspect, "c" for concomitant
+#' and "i" for interacting ; default to all, e.g. "sci").
 #' @param drug_data A data.frame containing the drug data (usually, it is `drug`)
-#' @param data_type A character string. The type of data to add columns to. Either `demo` or `link` (default to `demo`)
+#' @param data_type `r lifecycle::badge('deprecated')`. Data_type is now detected
+#' internally.
 #' @keywords data_management drug
 #' @export
 #' @importFrom rlang .data
@@ -26,19 +40,17 @@
 #' @examples
 #' # create a nivolumab column in demo_
 #'
-#' d_sel_names <- rlang::list2(nivolumab = "nivolumab")
+#' d_sel_names <- list(nivolumab = "nivolumab")
 #'
 #' d_drecno <- get_drecno(d_sel_names,
-#'                         mp_short = mp_short_)
-#'
+#'                         mp = mp_)
 #' demo_ <-
 #'   add_drug(
 #'     .data = demo_,
 #'     d_code = d_drecno,
 #'     method = "DrecNo",
 #'     repbasis = "sci",
-#'     drug_data = drug_,
-#'     data_type = c("demo")
+#'     drug_data = drug_
 #'   )
 #'
 #' # remember to assign the result to your actual demo dataset
@@ -53,8 +65,7 @@
 #'     d_names = "nivolumab_suspected",
 #'     method = "DrecNo",
 #'     repbasis = "s",
-#'     drug_data = drug_,
-#'     data_type = c("demo")
+#'     drug_data = drug_
 #'   )
 #'
 #' check_dm(demo_, cols = c("nivolumab", "nivolumab_suspected"))
@@ -66,25 +77,29 @@ add_drug <-
            repbasis = "sci",
            method = c("DrecNo", "MedicinalProd_Id"),
            drug_data,
-           data_type = c("demo", "link", "adr")
+           data_type = deprecated()
   )
   {
-    method <- match.arg(method)
 
-    data_type <- match.arg(data_type)
+    check_id_list_numeric(d_code)
 
-    # use duplicates in UMCReportId to identify a link dataset versus a demo dataset.
-    # and check that data_type is set correctly
-    if(data_type == "demo" &&
-       any(c("Drug_Id", "Adr_Id") %in% names(.data))){
-      stop("The dataset has Drug_Id or Adr_Id columns (like a `link` dataset). Yet data_type is set to `demo`. Please set data_type to `link` or use a `demo` dataset")
-    } else if(data_type == "link" &&
-              !all(c("Drug_Id", "Adr_Id") %in% names(.data))){
-      stop("The dataset does not have Drug_Id and Adr_Id columns, (as a `link` dataset would). Yet data_type is set to `link`. Please set data_type to `demo` or use a `link` dataset")
-    } else if(data_type == "adr" &&
-              !all(c("Adr_Id", "MedDRA_Id", "Outcome") %in% names(.data))){
-      stop("The dataset does not have Adr_Id, MedDRA_Id, and/or Outcome columns, (as an `adr` dataset would). Yet data_type is set to `adr`. Please set data_type accordingly.")
+    method <- rlang::arg_match(method)
+
+    check_data_drug(drug_data, "drug_data")
+
+    # Check if user has supplied `data_type`.
+    if (lifecycle::is_present(data_type)) {
+
+      # Signal the deprecation to the user
+      lifecycle::deprecate_soft(
+        when = "0.14.1",
+        what = "add_drug(data_type)",
+        details = c("i" = "data_type is now internally detected")
+      )
     }
+
+    data_type <-
+      query_data_type(.data, ".data")
 
     basis_sel <-
       c(
@@ -112,7 +127,8 @@ add_drug <-
       switch(data_type,
              demo = "UMCReportId",
              adr  = "UMCReportId",
-             link = "Drug_Id"
+             link = "Drug_Id",
+             drug = "Drug_Id"
       )
 
     renamer_tid <-

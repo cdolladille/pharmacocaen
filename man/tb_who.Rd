@@ -2,7 +2,7 @@
 % Please edit documentation in R/tb_who.R
 \name{tb_who}
 \alias{tb_who}
-\title{Create main VigiBase ECL tables}
+\title{Create main WHO tables}
 \usage{
 tb_who(path_who)
 }
@@ -18,14 +18,15 @@ and some columns as \code{numeric} (Quantity from ingredient table)
 All other columns are \code{character}.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}} \code{tb_who()} transform .txt files to .parquet files
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}} Transform Vigibase WHO .txt files
+to .parquet files
 
-WHODrug is delivered as zipped text files, that you should
+WHODrug is delivered as zipped text files folder, that you should
 transform to a more efficient format. Parquet format from arrow has many advantages:
-It works with out-of-memory data, which makes it possible to process tables on
+It can work with out-of-memory data, which makes it possible to process tables on
 a computer with not-so-much RAM. It is also lightweighted and standard across different
-langages.
-The function also creates variables in each table. See \code{\link[=tb_vigibase]{tb_vigibase()}} for some running examples.
+languages.
+The function also creates variables in each table. See \code{\link[=tb_vigibase]{tb_vigibase()}} for some running examples, and try \code{?mp_} or \code{?thg_} for more details.
 Use \code{\link[=dt_parquet]{dt_parquet()}} to load the tables afterward.
 }
 \examples{
@@ -38,5 +39,5 @@ path_who <- "/whodrug_directory/"
 # tb_who(path_who = path_who)
 }
 \seealso{
-\code{\link[=tb_vigibase]{tb_vigibase()}}, \code{\link[=tb_meddra]{tb_meddra()}}, \code{\link[=tb_custom]{tb_custom()}}, \code{\link[=dt_parquet]{dt_parquet()}}
+\code{\link[=tb_vigibase]{tb_vigibase()}}, \code{\link[=tb_meddra]{tb_meddra()}}, \code{\link[=tb_subset]{tb_subset()}}, \code{\link[=dt_parquet]{dt_parquet()}}
 }

@@ -19,12 +19,12 @@
 #' immune checkpoint inhibitor cases or immune-related adverse events.
 #' All data shown in these example data are **FAKE**, which means
 #' you shouldn't consider the counts and computations as accurate.
-#' Immune checkpoint inhibitors drugs can include
+#' Immune checkpoint inhibitors drugs include
 #' "Ipilimumab", "Atezolizumab", "Durvalumab", "Nivolumab", "Pembrolizumab",
-#' "Avelumab", "Cemiplimab","REGN 2810", "Tremelimumab"` in these tables.
+#' "Avelumab", "Cemiplimab","REGN 2810", "Tremelimumab".
 #' More details on how to use vigibase tables can be found in the vignettes.
 #' `vignette("basic_workflow")`, `vignette("descriptive")`.
-#' To build your own tables, use [tb_vigibase()]. See `vignette("build_tables")`.
+#' To build your own tables, use [tb_vigibase()]. See `vignette("getting_started")`.
 #'
 #' @docType data
 #'
@@ -125,7 +125,7 @@
 #'
 #' @examples
 #' data(demo_)
-#' demo_[, .N, by = AgeGroup]
+#' demo_ |> dplyr::count(AgeGroup)
 
 "demo_"
 
@@ -135,19 +135,19 @@
 
 #' @rdname demo_
 
-"followup_"
-
-#' @rdname demo_
-
-"ind_"
-
-#' @rdname demo_
-
 "adr_"
 
 #' @rdname demo_
 
 "link_"
+
+#' @rdname demo_
+
+"followup_"
+
+#' @rdname demo_
+
+"ind_"
 
 #' @rdname demo_
 
@@ -162,7 +162,8 @@
 #' Anonymized data from MedDRA, used to illustrate the package examples and vignettes.
 #' You can find term codes related to colitis, pneumonitis, hepatitis, a SMQ of
 #' embolisms.
-#' Compounds are `meddra_` and `smq_list_content_`.
+#' Compounds are `meddra_`, `smq_list_`, `smq_content_` and `smq_list_content_`.
+#' Create dedicated .parquet files using [tb_meddra()].
 #' See examples in \code{\link{get_llt_soc}} and \code{\link{get_llt_smq}}
 #'
 #' @docType data
@@ -179,6 +180,35 @@
 #'  \item `pt_soc_code` Integer. The preferred term code of the SOC itself.
 #'  \item `primary_soc_fg` Character. Whether the SOC is primary for this code.
 #'  "Y" or "N", Yes or No.
+#'  \item `empty_col` Logical. Empty column.
+#'  }
+#' `smq_list_` is a data.table with 9 variables and 11 rows.
+#' It is the list of SMQ.
+#' \itemize{
+#'  \item `smq_code` Integer. The code of the SMQ.
+#'  \item `smq_name` Character. The name of the SMQ.
+#'  \item `smq_level` Integer. The hierarchical level of the SMQ.
+#'  \item `smq_description` Character. The description of the SMQ.
+#'  \item `smq_source` Character. The source of the SMQ.
+#'  \item `smq_note` Character. Additional note on the SMQ.
+#'  \item `MedDRA_version` Numeric. The version of MedDRA.
+#'  \item `status` Character. The status of the SMQ (active or not)
+#'  \item `smq_algorithm` Character. Whether the SMQ is algorithmic or not.
+#'  \item `empty_col` Logical. Empty column.
+#'  }
+#' `smq_content_` is a data.table with 9 variables and 3386 rows.
+#' It is the content of each SMQ.
+#' \itemize{
+#'  \item `smq_code` Integer. The code of the SMQ.
+#'  \item `term_code` Integer. The low-level term code.
+#'  \item `term_level` Integer. The hierarchical level of the term.
+#'  \item `term_scope` Integer. The scope of the term (narrow 2 or broad 1)
+#'  \item `term_category` Character. In algorithmic SMQs, the category of the term.
+#'  \item `term_weight` Integer. The weight of the term (algorithmic SMQs).
+#'  \item `term_status` Integer. The status of the term (active or not)
+#'  \item `term_addition_version` Numeric. The version of the term addition.
+#'  \item `term_last_modified_version` Numeric. The last MedDRA version
+#'  the term was modified.
 #'  \item `empty_col` Logical. Empty column.
 #'  }
 #' `smq_list_content_` is a data.table with 19 variables and 3386 rows.
@@ -221,6 +251,14 @@
 
 "smq_list_content_"
 
+#' @rdname meddra_
+
+"smq_list_"
+
+#' @rdname meddra_
+
+"smq_content_"
+
 #' Sample of WHODrug
 #'
 #' A small part of WHODrug, used to illustrate the package examples and vignettes.
@@ -228,21 +266,24 @@
 #' tramadol, tretinoin, anti-thrombin iii, and ATC classes
 #' L03AA Colony stimulating factors, C09AA ACE inhibitors, plain,
 #' J01CA Penicillins with extended spectrum.
-#' Compounds are `thg_` and `mp_short_`.
+#' Compounds are `thg_` and `mp_`.
 #' See examples in \code{\link{get_drecno}} and \code{\link{get_atc_code}}
 #'
 #' @docType data
 #'
-#' @usage data(meddra_)
+#' @usage data(mp_)
 #'
 #' @format
-#' `mp_short_` is a data.table with 8 variables and 14146 rows.
+#' `mp_` is a data.table with 8 variables and 14146 rows.
 #' \itemize{
 #'   \item `MedicinalProd_Id` Integer. The medicinalproduct identifier.
 #'   \item `Sequence.number.1` and `2` Characters. Complement to DrecNo.
 #'   \item `DrecNo` Character. Drug Record Number, pivotal to identify drugs
 #'   with [get_drecno()].
-#'   \item `drug_name_t` Character. The name of the drug.
+#'   \item `drug_name_t` Character. The name of the drug. Compared to the
+#'   original `drug_name` variable in `mp` table,
+#'   this variable is trimmed for white spaces, and names
+#'   are in lowercase.
 #'   \item `Create.date` Character. The date the record was created.
 #'   \item `Date.changed` Character. The date the record was last changed.
 #'   \item `Country` Character. The country where the record was created.
@@ -264,17 +305,17 @@
 #' @source None
 #'
 #' @examples
-#' data(mp_short_)
+#' data(mp_)
 
-"mp_short_"
+"mp_"
 
-#' @rdname mp_short_
+#' @rdname mp_
 
 "thg_"
 
 #' Data for the immune checkpoint inhibitors example
 #'
-#' These are a set of data to provide examples on how my library works.
+#' These are a set of data to provide examples on the package.
 #' \itemize{
 #'   \item `smq_sel` is a named list of smq names
 #'   \item `pt_sel` is a named list of pt names

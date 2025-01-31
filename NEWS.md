@@ -1,3 +1,86 @@
+# vigicaen 0.15.0
+
+## Breaking changes
+
+* `mp` replaces `mp_short` throughout the package (#110). 
+Users will have to change existing code to replace calls to `mp_short` with `mp`.
+ 
+  ```R
+  # the old way
+  mp_short <- dt_parquet(path_who, "mp_short")
+  d_names <- list(drug1 = "paracetamol")
+  d_drecno <- get_drecno(d_names, mp_short = mp_short)
+  
+  # the new way
+  mp <- dt_parquet(path_who, "mp")
+  d_names <- list(drug1 = "paracetamol")
+  d_drecno <- get_drecno(d_names, mp = mp)
+  ```
+  
+* In `get_llt_smq()`, `smq_list` and `smq_content` replace `smq_list_content`(#74).
+Users will have to change existing code to replace calls 
+to `smq_list_content` with `smq_list` and `smq_content`.
+Example tables `smq_list_` and `smq_content_` are added to the package. This 
+change was made to streamline the process of querying sub-SMQs.
+  
+  ```R
+  # the old way
+  smq_list_content <- dt_parquet(path_meddra, "smq_list_content")
+  
+  smq_llt <- 
+    get_llt_smq(
+      list(ihd = "Ischaemic heart disease (SMQ)"),
+      smq_list_content)
+  
+  # the new way
+  smq_list <- dt_parquet(path_meddra, "smq_list")
+  smq_content <- dt_parquet(path_meddra, "smq_content")
+  
+  smq_llt <- 
+    get_llt_smq(
+       list(ihd = "Ischaemic heart disease (SMQ)"),
+       smq_list = smq_list,
+       smq_content = smq_content)
+  ```
+  
+* `compute_dispro()` is the new name of `compute_or_abcd()`, to reflect that
+other disproportionality measures are available.
+
+## New features  
+
+* Args `inspect` and `show_all` of `get_drecno()` 
+are replaced by `verbose` (#102).
+
+* `get_drecno()` and `get_llt_smq()` messages are cleaner and 
+written with the `cli` package.
+
+* New `top_n` argument added to `screen_adr()` (#86).
+
+* `screen_drug()` let you screen most reported drugs in `drug` (#103).
+
+* `get_llt_smq()` now queries sub-SMQs and return all relevant codes (#74).
+
+* Order of output columns in `compute_dispro()` has changed, to allow easier
+access to formatted values. Also new arguments `min_n_obs` and `export_raw_values`
+(#101).
+
+* `tb_subset()` handles ID code lists as input, instead of numeric vectors,
+to make workflow more consistent with other processes like `add_*`. (#112)
+
+## Minor and bug Fixes  
+
+* `screen_adr()` now counts effects at the case level (#86).  
+
+* arg `data_type` of `add_*` functions is now deprecated.
+Data_type is internally detected.
+
+* `add_drug()` and `add_adr()` have informative error if id code list is
+incorrect (#88).
+
+## Documenting
+
+* Several documenting issues were adressed (#64, #77, #82, #106, #108, #109, #111)
+
 # vigicaen 0.14.0
 
 ## New features
@@ -83,7 +166,7 @@ Increased code coverage back to 100%.
 #60 add table builders to arrow format (`tb_*` functions). This is supposed to overwrite the
 current fst and dt_fst process, which is being deprecated as of this release.
 
-New `build_tables` vignette shows the process.
+New `getting_started` vignette shows the process.
 
 `dt_parquet` function is to replace `dt_fst` in the workflow.
 
@@ -148,7 +231,7 @@ Patches:
 
 #50 Experimental `screen_adr` function to identify main adverse drug reactions in an adr dataset.
 
-#28 documentation of `desc_*` functions is now available in vignettes descriptive, generic_main and generic_dictionary.
+#28 documentation of `desc_*` functions is now available in vignettes descriptive, template_main and template_dictionary.
 
 ## Miscellaneous but very important
 
