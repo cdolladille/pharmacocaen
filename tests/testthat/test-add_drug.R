@@ -635,7 +635,8 @@ test_that("you can use arrow/parquet format", {
       MedicinalProd_Id = NA
     )
 
-  demo_test <-
+
+   demo_test <-
     data.table(
       UMCReportId = c(1, 2, 3, 4, 5),
       Region = NA,
