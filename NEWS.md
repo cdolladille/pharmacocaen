@@ -1,4 +1,5 @@
-# vigicaen 0.15.1, 
+
+# vigicaen 0.15.2, 
 
 ## New features
 
@@ -8,6 +9,15 @@
 #' based on dose amount, frequency, and their corresponding units.
 #' The function is #' compatible with `demo`, `link`, and `adr` datasets.
 
+=======
+# vigicaen 0.15.1
+
+## New features
+
+* `tb_*` family now has a `cli` style progress bar
+
+* `get_llt_soc()` output is reworked with `cli` features.
+The function also now correctly supports non-data.table data.frame.
 
 # vigicaen 0.15.0
 
