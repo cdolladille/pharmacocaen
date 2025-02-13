@@ -76,7 +76,14 @@ test_that("you can subset on drecno, age, meddra_id", {
       wd_out = paste0(wd_in, "/", "subset_drecno", "/"),
       subset_var = "drecno",
       sv_selection = sv_selection_drecno
-    )
+    ),
+    transform =
+      function(chr_line)
+        stringr::str_replace(
+          chr_line,
+          "(?>=\\d{1,3}\\%\\s| ).*(?= \\|)",
+          " percent, seconds"
+        )
   )
 
 
@@ -103,6 +110,39 @@ test_that("you can subset on drecno, age, meddra_id", {
     TRUE
   )
 
+  # --- drecno several items
+
+  sv_selection_drecno_item <-
+    list(
+      ipi = c(133138448),
+      nivo = c(111841511)
+    )
+
+  expect_snapshot(tb_subset(
+    wd_in = paste0(wd_in, "/"),
+    wd_out = paste0(wd_in, "/", "subset_drecno_item", "/"),
+    subset_var = "drecno",
+    sv_selection = sv_selection_drecno_item
+  ),
+  transform =
+    function(chr_line)
+      stringr::str_replace(
+        chr_line,
+        "(?>=\\d{1,3}\\%\\s| ).*(?= \\|)",
+        " percent, seconds"
+      ))
+
+  demo_sub_item <-
+    dt_parquet(paste0(wd_in, "/", "subset_drecno_item", "/"), "demo")
+
+  drug_sub_item <-
+    dt_parquet(paste0(wd_in, "/", "subset_drecno_item", "/"), "drug")
+
+  expect_equal(
+    nrow(demo_sub_item),
+    3 # one duplicate
+  )
+
   # ---- age
 
   expect_snapshot(tb_subset(
@@ -110,7 +150,14 @@ test_that("you can subset on drecno, age, meddra_id", {
     wd_out = paste0(wd_in, "/", "subset_age", "/"),
     subset_var = "age",
     sv_selection = c(7, 8)
-  ))
+  ),
+  transform =
+    function(chr_line)
+      stringr::str_replace(
+        chr_line,
+        "(?>=\\d{1,3}\\%\\s| ).*(?= \\|)",
+        " percent, seconds"
+      ))
 
   drug_sub <-
     dt_parquet(paste0(wd_in, "/", "subset_age", "/"), "drug")
@@ -146,7 +193,14 @@ test_that("you can subset on drecno, age, meddra_id", {
     wd_out = paste0(wd_in, "/", "subset_meddraid", "/"),
     subset_var = "meddra_id",
     sv_selection = sv_selection_mid
-  ))
+  ),
+  transform =
+    function(chr_line)
+      stringr::str_replace(
+        chr_line,
+        "(?>=\\d{1,3}\\%\\s| ).*(?= \\|)",
+        " percent, seconds"
+      ))
 
   adr_sub <-
     dt_parquet(paste0(wd_in, "/", "subset_meddraid", "/"), "adr")
@@ -259,7 +313,14 @@ test_that("you can keep suspdup", {
     subset_var = "age",
     sv_selection = c(7, 8),
     rm_suspdup = FALSE
-  ))
+  ),
+  transform =
+    function(chr_line)
+      stringr::str_replace(
+        chr_line,
+        "(?>=\\d{1,3}\\%\\s| ).*(?= \\|)",
+        " percent, seconds"
+      ))
 
   expect_snapshot(tb_subset(
     wd_in = paste0(wd_in, "/"),
@@ -267,7 +328,14 @@ test_that("you can keep suspdup", {
     subset_var = "age",
     sv_selection = c(7, 8),
     rm_suspdup = TRUE
-  ))
+  ),
+  transform =
+    function(chr_line)
+      stringr::str_replace(
+        chr_line,
+        "(?>=\\d{1,3}\\%\\s| ).*(?= \\|)",
+        " percent, seconds"
+      ))
 
   drug_sub <-
     dt_parquet(paste0(wd_in, "/", "subset_age_suspdup", "/"), "drug")
@@ -377,7 +445,14 @@ test_that("alternative syntaxes work", {
     wd_out = paste0(wd_in, "/", "subset_age"),
     subset_var = "age",
     sv_selection = c(7, 8)
-  ))
+  ),
+  transform =
+    function(chr_line)
+      stringr::str_replace(
+        chr_line,
+        "(?>=\\d{1,3}\\%\\s| ).*(?= \\|)",
+        " percent, seconds"
+      ))
 
   drug_sub <-
     dt_parquet(paste0(wd_in, "/", "subset_age", "/"), "drug")
